@@ -1,0 +1,35 @@
+import os
+import glob
+import torch
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+
+
+class Generate_Dataset(Dataset):
+    def __init__(self, path):
+        self.path = path
+        self.data_path = glob.glob(os.path.join(path,'input/*.npy'))  #读取data文件夹下所有.npy格式文件
+
+    def __getitem__(self, index):
+        data_path = self.data_path[index]
+        data = np.load(data_path)      #读取输入数据
+        tensor_data = torch.from_numpy(data)
+        
+        label_path = data_path.replace('input', 'label')
+        label = np.load(label_path)    #读取标签数据
+        tensor_label = torch.from_numpy(label)
+
+        return tensor_data, tensor_label
+
+    def __len__(self):
+        return len(self.data_path)
+if __name__ == '__main__':
+    top_dataset = Generate_Dataset('./dataset/')
+
+    #print("读入数据个数为：", len(top_dataset))
+    train_loader = torch.utils.data.DataLoader(dataset=top_dataset,
+                                               batch_size=1,
+                                               shuffle=True)
+    for data, label in train_loader:
+        print(data.shape)
+        print(label.shape)

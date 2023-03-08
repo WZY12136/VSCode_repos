@@ -1,0 +1,78 @@
+import torch
+import torch.nn as nn
+import torchvision
+import torch.nn.functional as F
+
+class DoubleConv3d_init(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(DoubleConv3d_init, self).__init__()
+        self.double_conv3d_init = nn.Sequential(
+            nn.Conv3d(in_channels, out_channels=32, kernel_size=(3, 3, 3), stride=1, padding=1),
+            nn.BatchNorm3d(32),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(32, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1),
+            nn.BatchNorm3d(out_channels),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, input):
+        return self.double_conv3d_init(input)
+
+
+class DoubleConv3d(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(DoubleConv3d, self).__init__()
+        self.double_conv3d = nn.Sequential(
+            nn.Conv3d(in_channels, in_channels, kernel_size=(3, 3, 3), stride=1, padding=1),
+            nn.BatchNorm3d(in_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(in_channels, out_channels, kernel_size=(3, 3, 3), stride=1, padding=1),
+            nn.BatchNorm3d(out_channels),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, input):
+        return self.double_conv3d(input)
+
+
+class Down(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(Down,self).__init__()
+        self.maxpool_conv3d = nn.Sequential(
+            nn.MaxPool3d(kernel_size=2, stride=2, padding=0),
+            DoubleConv3d(in_channels, out_channels)
+        )
+
+    def forward(self, input):
+        return self.maxpool_conv3d(input)
+
+
+class Up(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(Up, self).__init__()
+        self.up3d = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+        self.conv = DoubleConv3d(in_channels, out_channels)
+
+    def forward(self, input, x):  #x是接收的从encoder传过来的融合数据
+        #print('input',input.shape)
+        #print('x',x.shape)
+        x1 = self.up3d(input)
+        #print('x1',x1.shape)
+        diffY = torch.tensor(x1.size()[3] - x.size()[3])
+        diffX = torch.tensor(x1.size()[4] - x.size()[4])#特征融合部分
+        diffZ = torch.tensor(x1.size()[2] - x.size()[2])
+        #if x1.size()[3] > x.size()[3]:
+        x3 = F.pad(x, (diffX // 2, diffX - diffX // 2,
+                        diffY // 2, diffY - diffY // 2,
+                        diffZ // 2, diffZ - diffZ // 2))
+        #print('x3',x3.shape)
+        output = torch.cat([x1, x3], dim = 1)
+        return self.conv(output)
+
+class OutConv(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(OutConv,self).__init__()
+        self.conv1 = nn.Sequential(
+                    nn.Conv3d(in_channels, out_channels, kernel_size=(1, 1, 1)))
+    def forward(self, input):
+        return self.conv1(input)
