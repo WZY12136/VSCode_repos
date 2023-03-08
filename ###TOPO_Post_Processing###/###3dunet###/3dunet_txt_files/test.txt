@@ -1,0 +1,43 @@
+import glob
+import numpy as np
+import torch
+import os
+
+
+
+if __name__ == "__main__":
+    # 选择设备，有cuda用cuda，没有就用cpu
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # 加载网络，图片单通道，分类为1。
+    net = UNet3D(1, 1)
+    # 将网络拷贝到deivce中
+    net.to(device=device)
+    # 加载模型参数
+    net.load_state_dict(torch.load('best_model.pth', map_location=device))
+    # 测试模式
+    net.eval()
+    t = 50
+    # 保存结果地址
+    save_res_path = os.path.join('./dataset/test/'+('%d_res.png'%(t)))
+    # 转为batch为1，通道为1，大小为512*512的数组
+    data = np.load('./dataset/test/topomodel_50.npy')
+    data = data.reshape(1, 1, data.shape[0], data.shape[1], data.shape[2])
+    # 转为tensor
+    data_tensor = torch.from_numpy(data)
+    # 将tensor拷贝到device中，只用cpu就是拷贝到cpu中，用cuda就是拷贝到cuda中。
+    data_tensor = data_tensor.to(device=device, dtype=torch.float32)
+    # 预测
+    pred = net(data_tensor)
+    # 提取结果
+    pred = np.array(pred.data.cpu()[0])[0]
+    print(pred)
+    # # 处理结果
+    for i in range(pred.shape[0]):
+        for j in range(pred.shape[1]):
+            for k in range(pred.shape[2]):
+                if pred[i][j][k] > 0.5:
+                    pred[i][j][k] = 1
+                else:
+                    pred[i][j][k] = 0
+    # 保存图片
+    np.save('./dataset/test/',pred)
