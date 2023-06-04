@@ -21,6 +21,7 @@ def nozeroarray_detect(dataindex):
     return  nozeroarray
 
 
+
 #数据集划分为negative_sample和positive_sample
 def dataset_split(nozeroarray, inputdataaddr, saveinputdataaddr):
     
@@ -30,7 +31,9 @@ def dataset_split(nozeroarray, inputdataaddr, saveinputdataaddr):
         labeldataaddr = inputdataaddr.replace('input/','label/')
         savelabeldataaddr = saveinputdataaddr.replace('input/', 'label/')
         inputdata = np.load(os.path.join(inputdataaddr, str(n)+'.npy'))
+        inputdata = inputdata[np.newaxis, :, :,:]
         labeldata = np.load(os.path.join(labeldataaddr, str(n)+'.npy'))
+        labeldata = labeldata[np.newaxis, :, :,:]
         if n in nozeroarray:
             np.save(os.path.join(saveinputdataaddr, 'positive_input/'+str(n)+'.npy'), inputdata)
             np.save(os.path.join(savelabeldataaddr, 'positive_label/'+str(n)+'.npy'), labeldata)
@@ -39,8 +42,10 @@ def dataset_split(nozeroarray, inputdataaddr, saveinputdataaddr):
             np.save(os.path.join(savelabeldataaddr, 'negative_label/'+str(n)+'.npy'), labeldata)
 
 if __name__ == "__main__":
-    dataindex = '../Data/dataset（切割数据集-整体汇总编号）/label/'
-    nozeroarray = nozeroarray_detect(dataindex)
-    inputdataaddr = '../Data/dataset（切割数据集-整体汇总编号）/input/'
-    saveinputdataaddr = '../Data/dataset(按正负样本分类)/input/'
+    inputdataaddr = '../../Data（实验用）/dataset（切割数据集-整体汇总编号）/input/'
+    
+    search_nozerodataindex = inputdataaddr.replace('input/', 'label/')
+    saveinputdataaddr = '../../Data（实验用）/dataset(按正负样本分类)/input/'
+
+    nozeroarray = nozeroarray_detect(search_nozerodataindex)
     dataset_split(nozeroarray, inputdataaddr, saveinputdataaddr)

@@ -9,17 +9,17 @@ def cutmodule(matdata, saveindex, signal):
         data = matdata['inputdata']
         print(data.shape)
         print('****************执行数据尺寸修改****************')
-        # nelx, nely, nelz = 120, 120, 120
-        # if (nelx - data.shape[0])%2 !=0:
-        #     data = np.pad(data, ((1, 0), (0, 0), (0 ,0)))
-        # if (nelz - data.shape[1])%2 !=0:
-        #     data = np.pad(data, ((0, 0), (1, 0), (0 ,0)))
-        # if (nely - data.shape[2])%2 !=0:
-        #     data = np.pad(data, ((0, 0), (0, 0), (1 ,0)))
-        # data = np.pad(data, (((nelx - data.shape[0])//2, (nelx - data.shape[0])//2),
-        #                 ((nely - data.shape[1])//2, (nely - data.shape[1])//2),
-        #                 ((nelz - data.shape[2])//2, (nelx - data.shape[2])//2)))
-        # io.savemat(os.path.join(saveindex,'inputdata.mat'),{'inputdata':data})
+        nelx, nely, nelz = 120, 120, 120
+        if (nelx - data.shape[0])%2 !=0:
+            data = np.pad(data, ((1, 0), (0, 0), (0 ,0)))
+        if (nelz - data.shape[1])%2 !=0:
+            data = np.pad(data, ((0, 0), (1, 0), (0 ,0)))
+        if (nely - data.shape[2])%2 !=0:
+            data = np.pad(data, ((0, 0), (0, 0), (1 ,0)))
+        data = np.pad(data, (((nelx - data.shape[0])//2, (nelx - data.shape[0])//2),
+                        ((nely - data.shape[1])//2, (nely - data.shape[1])//2),
+                        ((nelz - data.shape[2])//2, (nelx - data.shape[2])//2)))
+        io.savemat(os.path.join(saveindex,'inputdata.mat'),{'inputdata':data})
         tempdata = np.zeros((20, 20, 20))
         for k in range(0, data.shape[2], 20):               #沿y轴切割
             for j in range(0, data.shape[1], 20):           #沿z轴切割
