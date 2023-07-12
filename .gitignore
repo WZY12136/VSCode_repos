@@ -14,3 +14,10 @@ auto-segmentation
 Data（实验用）
 dataset_mini_batch
 temp
+test
+traindata_record
+test_batch
+test111
+test.ipynb
+best_model.pth
+train-images-idx3-ubyte.gz
